@@ -1,0 +1,22 @@
+# Build output (CMake presets write to build/<preset>)
+build/
+
+# CubeMX temporary folder during code generation
+mx.scratch
+
+# clangd index cache
+.cache/
+
+# Editor / OS clutter
+*.swp
+*~
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Personal VS Code files; the rest is project config the ST extension needs
+.vscode/*
+!.vscode/settings.json
+!.vscode/launch.json
+!.vscode/tasks.json
+!.vscode/extensions.json

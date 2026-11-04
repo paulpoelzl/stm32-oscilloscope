@@ -1,0 +1,6 @@
+# Normalize line endings in the repository (CubeMX writes CRLF on Windows)
+* text=auto
+
+# Keep Windows line endings for files CubeMX expects in that format
+*.ioc     text eol=crlf
+.mxproject text eol=crlf
