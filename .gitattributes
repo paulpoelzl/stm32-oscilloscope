@@ -4,3 +4,6 @@
 # Keep Windows line endings for files CubeMX expects in that format
 *.ioc     text eol=crlf
 .mxproject text eol=crlf
+
+# Hide vendor code from GitHub language statistics
+Drivers/** linguist-vendored
