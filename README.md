@@ -13,7 +13,7 @@ preset and build. Peripheral settings live in `stm32-oscilloscope.ioc` and are
 changed with STM32CubeMX.
 
 ## Roadmap
-- [ ] Blink the LED
+- [x] Blink the LED
 - [ ] Print a startup message over USART
 - [ ] Read a potentiometer with the ADC and print the value over USART
 - [ ] Sample at a fixed rate with TIM3 and DMA
