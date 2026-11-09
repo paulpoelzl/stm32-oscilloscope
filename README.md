@@ -1,6 +1,5 @@
 # STM32 Oscilloscope
-An oscilloscope based on the NUCLEO-F334R8 board (STM32F334R8 MCU), built up
-incrementally.
+An oscilloscope based on the NUCLEO-F334R8 board (STM32F334R8 MCU), built up incrementally.
 
 ## Project Structure
 - `App/`: Application code.
@@ -8,21 +7,14 @@ incrementally.
 - `Drivers/`: ST and Arm LL driver and CMSIS code, copied in by STM32CubeMX.
 
 ## Building
-Open the folder in VS Code with the STM32CubeIDE extension, select the `Debug`
-preset and build. Peripheral settings live in `stm32-oscilloscope.ioc` and are
-changed with STM32CubeMX.
+Open the folder in VS Code with the STM32CubeIDE extension, select the `Debug` preset and build. Peripheral settings live in `stm32-oscilloscope.ioc` and are changed with STM32CubeMX.
 
 ## Design
-STM32CubeMX owns the static hardware setup: pins, clocks, peripheral
-configuration and NVIC priorities. The C++ classes in `App/` are thin wrappers
-around the LL drivers and only do what changes at run time, such as starting a
-timer, changing its period or enabling an interrupt. Interrupt handlers for
-peripherals driven from `App/` are defined there, with CubeMX's handler
-generation turned off for them.
+STM32CubeMX owns the static hardware setup: pins, clocks, peripheral configuration and NVIC priorities. The C++ classes in `App/` are thin wrappers around the LL drivers and only do what changes at run time, such as starting a timer, changing its period or enabling an interrupt. Interrupt handlers for peripherals driven from `App/` are defined there, with CubeMX's handler generation turned off for them.
 
 ## Roadmap
 - [x] Blink the LED
-- [ ] Print a startup message over USART
+- [x] Print a startup message over USART
 - [ ] Read a potentiometer with the ADC and print the value over USART
 - [ ] Sample at a fixed rate with TIM3 and DMA
 - [ ] Stream samples to a host program and plot them live
@@ -34,5 +26,4 @@ generation turned off for them.
 - [ ] Add input protection and scaling
 
 ## License
-Code in `App/` is MIT licensed, see `LICENSE`. Code in `Drivers/` and the
-STM32CubeMX-generated files keep their original licenses and copyright notices.
+Code in `App/` is MIT licensed, see `LICENSE`. Code in `Drivers/` and the STM32CubeMX-generated files keep their original licenses and copyright notices.
