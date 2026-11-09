@@ -1,0 +1,26 @@
+# Editor settings for our own files only.
+# CubeMX-generated Core/, vendor Drivers/ and cmake/stm32cubemx/ are left out on purpose,
+# so opening and saving them never changes whitespace or line endings.
+# C/C++ layout itself is handled by App/.clang-format.
+root = true
+
+[App/**]
+charset = utf-8
+end_of_line = lf
+insert_final_newline = true
+trim_trailing_whitespace = true
+indent_style = space
+indent_size = 2
+
+# Leading "/" anchors to the repo root, so cmake/stm32cubemx/CMakeLists.txt is not matched.
+[/README.md]
+charset = utf-8
+end_of_line = lf
+insert_final_newline = true
+trim_trailing_whitespace = true
+
+[/CMakeLists.txt]
+charset = utf-8
+end_of_line = lf
+insert_final_newline = true
+trim_trailing_whitespace = true

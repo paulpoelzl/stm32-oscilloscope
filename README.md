@@ -12,6 +12,9 @@ Open the folder in VS Code with the STM32CubeIDE extension, select the `Debug` p
 ## Design
 STM32CubeMX owns the static hardware setup: pins, clocks, peripheral configuration and NVIC priorities. The C++ classes in `App/` are thin wrappers around the LL drivers and only do what changes at run time, such as starting a timer, changing its period or enabling an interrupt. Interrupt handlers for peripherals driven from `App/` are defined there, with CubeMX's handler generation turned off for them.
 
+## Code Style
+Code in `App/` is formatted with clang-format using LLVM style (`App/.clang-format`); basic whitespace rules for our own files are in `.editorconfig`. Naming: types are UpperCamelCase, functions and variables lowerCamelCase, and member variables end with `_`. Generated and vendor code in `Core/` and `Drivers/` is left as STM32CubeMX writes it.
+
 ## Roadmap
 - [x] Blink the LED
 - [x] Print a startup message over USART

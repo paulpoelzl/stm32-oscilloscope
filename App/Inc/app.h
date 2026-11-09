@@ -1,7 +1,8 @@
 #pragma once
 
 // Entry point of the C++ application layer.
-// Called once from the CubeMX-generated main() after all peripherals are initialized.
+// Called once from the CubeMX-generated main() after all peripherals are
+// initialized.
 
 #ifdef __cplusplus
 extern "C" {

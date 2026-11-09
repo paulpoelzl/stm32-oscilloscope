@@ -1,0 +1,4 @@
+# Formatting for custom application code.
+# Placed in App/ so it never touches CubeMX-generated Core/ or vendor Drivers/.
+BasedOnStyle: LLVM
+AllowShortBlocksOnASingleLine: Empty
