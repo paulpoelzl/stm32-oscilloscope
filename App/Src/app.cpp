@@ -10,19 +10,14 @@ namespace {
 }
 
 extern "C" void app_main(void) {
-    LL_TIM_InitTypeDef tim_config;
-    LL_TIM_StructInit(&tim_config);
-    tim_config.Prescaler = 35999;
-    tim_config.CounterMode = LL_TIM_COUNTERMODE_UP;
-    tim_config.Autoreload = 999;
-
-    // Lowest preempt priority (group 2: preempt 0..3): the LED must never delay the ADC/DMA path.
-    timer2.init(tim_config, NVIC_EncodePriority(NVIC_GetPriorityGrouping(), 3, 0));
+    // TIM2 period and NVIC priority are set in CubeMX (lowest preempt priority,
+    // so the LED never delays the ADC/DMA path).
+    timer2.enableUpdateInterrupt();
     timer2.start();
 
     while (true) {
         __WFI();
-    };
+    }
 }
 
 extern "C" void TIM2_IRQHandler() {

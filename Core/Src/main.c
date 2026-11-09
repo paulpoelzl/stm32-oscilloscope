@@ -102,6 +102,7 @@ int main(void)
   MX_TIM3_Init();
   MX_DAC1_Init();
   MX_TIM6_Init();
+  MX_TIM2_Init();
   /* USER CODE BEGIN 2 */
   app_main(); /* C++ application, does not return */
 
