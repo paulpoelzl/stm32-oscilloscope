@@ -1,5 +1,7 @@
 #pragma once
 
+#include <cstdint>
+
 #include "stm32f3xx_ll_tim.h"
 
 // Run-time control of a timer that CubeMX has already configured
@@ -14,7 +16,7 @@ class Timer {
 
 		// Changes the period. Running: PSC and ARR switch together at the next update
 		// (needs ARR preload, set in CubeMX). Stopped: applied immediately via UG.
-		void setTimebase(uint16_t psc, uint32_t arr) const {
+		void setTimebase(std::uint16_t psc, std::uint32_t arr) const {
 			LL_TIM_SetPrescaler(timer_, psc);
 			LL_TIM_SetAutoReload(timer_, arr);
 			if (!LL_TIM_IsEnabledCounter(timer_)) {
