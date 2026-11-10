@@ -5,11 +5,12 @@
 #include "interrupt_timer.hpp"
 #include "led.hpp"
 #include "main.h" // CubeMX pin labels (LD2_Pin, ...) and LL headers
+#include "sample_buffer.hpp"
 #include "uart.hpp"
-#include <array>
 #include <cstddef>
 #include <cstdint>
 #include <cstdio>
+#include <span>
 
 namespace {
 const InterruptTimer timer2{TIM2};
@@ -20,21 +21,14 @@ const Adc adc1{ADC1};
 const DmaChannel channel1{DMA1, LL_DMA_CHANNEL_1};
 
 constexpr std::size_t kSampleCount = 256;
-static_assert(kSampleCount % 2 == 0,
-              "HT splits the buffer into two equal halves");
-static_assert(kSampleCount <= 0xFFFF, "CNDTR is a 16-bit counter");
 
-// Written by the DMA, which the compiler can't see; volatile forces real reads.
-std::array<volatile std::uint16_t, kSampleCount> adcBuffer;
-volatile bool lowerHalfReady{};
-volatile bool upperHalfReady{};
-volatile std::uint16_t overrun{};
+constinit SampleBuffer<kSampleCount> adcBuffer;
 std::uint16_t reportedOverrun{};
 
-char text[10];
-void sendSamples(std::size_t first, std::size_t last) {
-  for (std::size_t i = first; i < last; i++) {
-    std::snprintf(text, sizeof(text), "%d\r\n", adcBuffer[i]);
+char text[16];
+void sendSamples(std::span<const volatile std::uint16_t> samples) {
+  for (auto sample : samples) {
+    std::snprintf(text, sizeof(text), "%u\r\n", sample);
     uart2.writeText(text);
   }
 }
@@ -66,23 +60,20 @@ extern "C" void app_main(void) {
     // WFI still wakes on a pending interrupt with PRIMASK set,
     // so an ISR that fires after the check isn't missed.
     __disable_irq();
-    if (!lowerHalfReady && !upperHalfReady && overrun == reportedOverrun) {
+    if (!adcBuffer.hasReadyHalf()) {
       __WFI();
     }
     __enable_irq();
 
-    std::uint16_t localOverrun = overrun;
-    if (localOverrun > reportedOverrun) {
+    std::uint16_t localOverrun = adcBuffer.overrunCount();
+    if (localOverrun != reportedOverrun) {
       reportedOverrun = localOverrun;
       uart2.writeText("Overrun: ");
-      std::snprintf(text, sizeof(text), "%d\r\n", localOverrun);
+      std::snprintf(text, sizeof(text), "%u\r\n", reportedOverrun);
       uart2.writeText(text);
-    } else if (lowerHalfReady) {
-      sendSamples(0, adcBuffer.size() / 2);
-      lowerHalfReady = false;
-    } else if (upperHalfReady) {
-      sendSamples(adcBuffer.size() / 2, adcBuffer.size());
-      upperHalfReady = false;
+    } else if (adcBuffer.hasReadyHalf()) {
+      sendSamples(adcBuffer.getReadyHalf());
+      adcBuffer.release();
     }
   }
 }
@@ -95,19 +86,12 @@ extern "C" void TIM2_IRQHandler() {
   }
 }
 
-// The DMA starts overwriting the lower half at TC and the upper at HT,
-// so a mark still set there is an overrun.
+// HT: lower half full, TC: upper half full.
 extern "C" void DMA1_Channel1_IRQHandler() {
   if (channel1.clearHTFlag()) {
-    if (upperHalfReady) {
-      overrun = overrun + 1;
-    }
-    lowerHalfReady = true;
+    adcBuffer.markLowerReady();
   }
   if (channel1.clearTCFlag()) {
-    if (lowerHalfReady) {
-      overrun = overrun + 1;
-    }
-    upperHalfReady = true;
+    adcBuffer.markUpperReady();
   }
 }
