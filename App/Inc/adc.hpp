@@ -54,6 +54,10 @@ public:
   // Latest result, without waiting (overrun mode overwrites, see CubeMX).
   std::uint16_t read() const { return LL_ADC_REG_ReadConversionData12(adc_); }
 
+  std::uint32_t getDataRegAddress() const {
+    return LL_ADC_DMA_GetRegAddr(adc_, LL_ADC_DMA_REG_REGULAR_DATA);
+  }
+
 private:
   // Only runs while the ADC is disabled.
   void calibrate() const {

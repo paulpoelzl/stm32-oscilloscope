@@ -19,7 +19,7 @@ Code in `App/` is formatted with clang-format using LLVM style (`App/.clang-form
 - [x] Blink the LED
 - [x] Print a startup message over USART
 - [x] Read a potentiometer with the ADC and print the value over USART
-- [ ] Sample at a fixed rate with TIM3 and DMA
+- [x] Sample at a fixed rate with TIM3 and DMA
 - [ ] Stream samples to a host program and plot them live
 - [ ] Generate DC levels and a sine wave with the DAC and read them back correctly on the ADC
 - [ ] Add a binary protocol with framing and a checksum
