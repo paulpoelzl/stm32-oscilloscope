@@ -20,3 +20,10 @@ desktop.ini
 !.vscode/launch.json
 !.vscode/tasks.json
 !.vscode/extensions.json
+
+# Python host program
+Host/.venv/
+__pycache__/
+*.egg-info/
+.pytest_cache/
+.ruff_cache/
