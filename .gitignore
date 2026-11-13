@@ -23,6 +23,7 @@ desktop.ini
 
 # Python host program
 Host/.venv/
+Host/.coverage
 __pycache__/
 *.egg-info/
 .pytest_cache/
