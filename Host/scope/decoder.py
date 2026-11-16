@@ -4,10 +4,8 @@ from abc import ABC, abstractmethod
 
 import numpy as np
 
+from scope.board import ADC_MAX
 from scope.events import Event, Overrun, SampleBlock
-
-# Largest sample value: the ADC samples with 12 bits.
-ADC_MAX = 4095
 
 # Largest overrun total: the firmware counts overruns in a uint16.
 OVERRUN_MAX = 65535

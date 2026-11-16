@@ -1,5 +1,6 @@
 import numpy as np
 
+from scope.board import ADC_MAX
 from scope.events import Overrun, SampleBlock
 from scope.trace import Trace
 
@@ -78,3 +79,37 @@ def test_y_is_updated_in_place():
     y_ref = trace.y
     trace.consume([block(1, 2, 3)])
     assert trace.y is y_ref
+
+
+def test_short_block_is_converted():
+    trace = Trace(4, 1.0, scale=2.0, offset=1.0)
+    trace.consume([block(1, 2)])
+    assert_y(trace, [NAN, NAN, 3, 5])
+
+
+def test_long_block_is_converted():
+    trace = Trace(3, 1.0, scale=2.0, offset=1.0)
+    trace.consume([block(1, 2, 3, 4)])
+    assert_y(trace, [5, 7, 9])
+
+
+def test_gap_stays_nan_after_conversion():
+    trace = Trace(3, 1.0, scale=2.0, offset=1.0)
+    trace.consume([block(1), Overrun(1), block(2)])
+    assert_y(trace, [3, NAN, 5])
+
+
+def test_x_range_spans_x():
+    trace = Trace(100, 1000.0)
+    assert trace.x_range == (float(trace.x[0]), 0.0)
+
+
+def test_y_range_is_converted_adc_range():
+    trace = Trace(3, 1.0, scale=2.0, offset=1.0)
+    assert trace.y_range == (1.0, 1.0 + 2.0 * ADC_MAX)
+
+
+def test_label_and_unit_are_passed_through():
+    trace = Trace(3, 1.0, label="Voltage", unit="V")
+    assert trace.y_label == "Voltage"
+    assert trace.y_unit == "V"
