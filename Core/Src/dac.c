@@ -75,7 +75,7 @@ void MX_DAC1_Init(void)
   */
   DAC_InitStruct.TriggerSource = LL_DAC_TRIG_EXT_TIM6_TRGO;
   DAC_InitStruct.WaveAutoGeneration = LL_DAC_WAVE_AUTO_GENERATION_NONE;
-  DAC_InitStruct.OutputBuffer = LL_DAC_OUTPUT_BUFFER_ENABLE;
+  DAC_InitStruct.OutputBuffer = LL_DAC_OUTPUT_BUFFER_DISABLE;
   LL_DAC_Init(DAC1, LL_DAC_CHANNEL_1, &DAC_InitStruct);
   LL_DAC_EnableTrigger(DAC1, LL_DAC_CHANNEL_1);
   /* USER CODE BEGIN DAC1_Init 2 */

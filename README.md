@@ -7,8 +7,11 @@ An oscilloscope based on the NUCLEO-F334R8 board (STM32F334R8 MCU), built up inc
 - `Drivers/`: ST and Arm LL driver and CMSIS code, copied in by STM32CubeMX.
 - `Host/`: Python program that plots the samples on the PC, see `Host/README.md`.
 
-## Building
-Open the folder in VS Code with the STM32CubeIDE extension, select the `Debug` preset and build. Peripheral settings live in `stm32-oscilloscope.ioc` and are changed with STM32CubeMX.
+## Getting Started
+1. Open the folder in VS Code with the STM32CubeIDE extension, select the `Debug` preset and build. Peripheral settings live in `stm32-oscilloscope.ioc` and are changed with STM32CubeMX.
+2. Connect the board over USB and flash it with the `STM32Cube: Launch ST-Link GDB Server` launch configuration.
+3. For a test signal, connect A2 (PA4, DAC output, 50 Hz sine) to A0 (PA0, ADC input) with a jumper wire. Any other signal between 0 V and 3.3 V can go to A0 instead.
+4. Set up and start the host program as described in `Host/README.md`.
 
 ## Design
 STM32CubeMX owns the static hardware setup: pins, clocks, peripheral configuration and NVIC priorities. The C++ classes in `App/` are thin wrappers around the LL drivers and only do what changes at run time, such as starting a timer, changing its period or enabling an interrupt. Interrupt handlers for peripherals driven from `App/` are defined there, with CubeMX's handler generation turned off for them.
@@ -22,7 +25,7 @@ Code in `App/` is formatted with clang-format using LLVM style (`App/.clang-form
 - [x] Read a potentiometer with the ADC and print the value over USART
 - [x] Sample at a fixed rate with TIM3 and DMA
 - [x] Stream samples to a host program and plot them live
-- [ ] Generate DC levels and a sine wave with the DAC and read them back correctly on the ADC
+- [x] Generate DC levels and a sine wave with the DAC and read them back correctly on the ADC
 - [ ] Replay recordings in real time and stop the plot to scroll back through earlier samples
 - [ ] Add a binary protocol with framing and a checksum
 - [ ] Capture high-speed bursts to RAM with DMA
