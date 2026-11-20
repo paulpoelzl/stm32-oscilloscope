@@ -31,8 +31,8 @@ class LivePlot:
         A QApplication must exist before construction.
         """
         self._plot_widget = pg.PlotWidget()
-        self._plot_widget.setXRange(*x_range, padding=0)
-        self._plot_widget.setYRange(*y_range, padding=0)
+        self._y_range = y_range
+        self.show_live(x_range)
 
         # pyqtgraph picks the SI prefix itself, e.g. ms for a short trace.
         self._plot_widget.setLabel("bottom", "Time", units="s")
@@ -57,3 +57,33 @@ class LivePlot:
     def show_error(self, msg: str) -> None:
         """Show msg in a modal error box and wait until it is closed."""
         pg.QtWidgets.QMessageBox.critical(self._plot_widget, "Error", msg)
+
+    def _set_view(self, x_range: tuple[float, float]) -> None:
+        """Show x_range and the y range, and keep panning inside them."""
+        # Limits first: setXRange is clamped to the limits still in place.
+        self._plot_widget.setLimits(
+            xMin=x_range[0],
+            xMax=x_range[1],
+            yMin=self._y_range[0],
+            yMax=self._y_range[1],
+        )
+        self._plot_widget.setXRange(*x_range, padding=0)
+        self._plot_widget.setYRange(*self._y_range, padding=0)
+
+    def show_live(self, x_range: tuple[float, float]) -> None:
+        """Fix the x axis at x_range and ignore the mouse on it.
+
+        For running, while new samples scroll through. The y axis can still
+        be zoomed.
+        """
+        self._set_view(x_range)
+        self._plot_widget.setMouseEnabled(x=False, y=True)
+
+    def show_history(self, x_range: tuple[float, float]) -> None:
+        """Show x_range and let the user pan and zoom with the mouse.
+
+        For stopped, to look back through the history. Panning stops at the
+        ends of x_range.
+        """
+        self._set_view(x_range)
+        self._plot_widget.setMouseEnabled(x=True, y=True)

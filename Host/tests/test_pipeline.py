@@ -9,7 +9,9 @@ NAN = np.nan
 
 
 def assert_y(trace, expected):
-    np.testing.assert_array_equal(trace.y, np.array(expected, np.float32))
+    np.testing.assert_array_equal(
+        trace.window_y, np.array(expected, np.float32)
+    )
 
 
 def test_replayed_capture_decodes_to_samples(tmp_path):
@@ -36,7 +38,7 @@ def test_replayed_capture_fills_trace(tmp_path):
     path.write_bytes(b"1\r\n2\r\nOverrun: 1\r\n3\r\n")
 
     decoder = AsciiDecoder()
-    trace = Trace(5, 1.0)
+    trace = Trace(5, 5, 1.0)
     with FileTransport(path) as transport:
         try:
             while True:

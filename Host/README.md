@@ -26,6 +26,8 @@ python -m scope --replay capture.txt    # replay a recording from capture.txt
 
 Without `-p`, the board is found by the USB vendor ID of its ST-LINK. On Linux, the port is usually `/dev/ttyACM0` instead of `COM5`, and opening it needs membership in the `dialout` group: run `sudo usermod -aG dialout $USER` and log in again, otherwise opening the port fails with "Permission denied". `-b` overrides the baud rate, which is ignored when replaying. `--replay` can't be combined with `-p` or `--record`. `python -m scope --help` lists all options.
 
+Space stops the plot, so you can pan and zoom with the mouse through the history of the newest samples. Space again shows the newest window and runs on. While stopped, new samples are dropped. The lengths of the window and the history are set in `__main__.py`.
+
 ## Wire Format
 
 The board sends ASCII text over USART2 at 115200 baud, one item per line, each ending in `\r\n`:
@@ -49,9 +51,9 @@ The `Controller` moves the data along this chain on each tick of a Qt timer. The
 
 - `transport.py`: delivers raw bytes from the serial port (`SerialTransport`) or a file (`FileTransport`). `RecordingTransport` wraps another transport and writes everything it reads to a file.
 - `decoder.py`, `events.py`: turn the byte stream into events, `SampleBlock` and `Overrun`. Lines may be split across reads at any point, and input that can't be decoded is skipped, never raised.
-- `trace.py`: keeps the newest screen of samples, scrolling from right to left with the newest sample at time 0. Converts ADC counts with a scale and offset, so events keep raw counts. NaN marks empty slots and lost samples.
-- `plot.py`: draws the trace with pyqtgraph. NaN breaks the line, so gaps are visible.
-- `controller.py`: on each timer tick, reads from the transport, decodes, adds the events to the trace and redraws. Stops at the end of a replay, or shows the error when reading fails.
+- `trace.py`: keeps a history of the newest samples, of which the newest window is shown while running, scrolling from right to left with the newest sample at time 0. The history sits in a buffer twice its size, so samples are moved back to the start only once per history length, not on every push. Converts ADC counts with a scale and offset, so events keep raw counts. NaN marks empty slots and lost samples.
+- `plot.py`: draws the trace with pyqtgraph. NaN breaks the line, so gaps are visible. While running, the x axis stays fixed; while stopped, it follows the mouse within the history.
+- `controller.py`: on each timer tick, reads from the transport, decodes, adds the events to the trace and redraws. While stopped, it still reads and decodes, so the port does not fill up, but drops the events. Stops at the end of a replay, or shows the error when reading fails.
 - `board.py`: constants that mirror the firmware's configuration, such as the sample rate and baud rate.
 - `__main__.py`: parses the command line, opens the transport and connects the layers.
 

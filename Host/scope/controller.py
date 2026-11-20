@@ -22,6 +22,14 @@ class Plot(Protocol):
         """Tell the user about a failure."""
         ...
 
+    def show_live(self, x_range: tuple[float, float]) -> None:
+        """Show x_range and keep it fixed while samples scroll through."""
+        ...
+
+    def show_history(self, x_range: tuple[float, float]) -> None:
+        """Show x_range and let the user pan and zoom through it."""
+        ...
+
 
 class Controller:
     """Polls the transport on a timer and redraws the plot.
@@ -29,6 +37,10 @@ class Controller:
     Each tick reads the bytes that arrived, decodes them, adds the events to
     the trace and plots it. Does not own the transport: whoever opened it
     closes it.
+
+    While stopped, bytes are still read and decoded, so the port does not
+    fill up and lines stay in step, but the events are dropped. The trace
+    then stays as it was, and the plot shows its whole history.
 
     When the source ends, the timer stops and the last trace stays on screen.
     When reading fails, the timer stops, the error is shown and error holds
@@ -49,6 +61,7 @@ class Controller:
         """
         self._timer = pg.QtCore.QTimer(interval=refresh_ms)
         self._timer.timeout.connect(self.update)
+        self._running = True
         self._transport = transport
         self._decoder = decoder
         self._trace = trace
@@ -67,10 +80,25 @@ class Controller:
             self.error = error
         else:
             events = self._decoder.feed(raw)
-            if events:
+            if self._running and events:
                 self._trace.consume(events)
-                self._plot.plot(self._trace.x, self._trace.y)
+                self._plot.plot(self._trace.window_x, self._trace.window_y)
 
     def start(self) -> None:
         """Start polling. Needs a running Qt event loop to tick."""
         self._timer.start()
+
+    def toggle_running(self) -> None:
+        """Switch between running and stopped.
+
+        Stopping plots the whole history and lets the user scroll through it.
+        Running shows the newest window again.
+        """
+        self._running = not self._running
+
+        if self._running:
+            self._plot.plot(self._trace.window_x, self._trace.window_y)
+            self._plot.show_live(self._trace.window_x_range)
+        else:
+            self._plot.plot(self._trace.history_x, self._trace.history_y)
+            self._plot.show_history(self._trace.history_x_range)

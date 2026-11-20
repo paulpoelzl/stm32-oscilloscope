@@ -45,3 +45,22 @@ def test_show_error_opens_error_box(plot, monkeypatch):
     )
     plot.show_error("port lost")
     assert shown == ["port lost"]
+
+
+def test_x_axis_ignores_mouse_while_live(plot):
+    assert plot.widget.getViewBox().state["mouseEnabled"] == [False, True]
+
+
+def test_show_history_widens_x_range_past_live_limits(plot):
+    plot.show_history((-16.0, 0.0))
+    x_range, _ = plot.widget.getPlotItem().viewRange()
+    np.testing.assert_allclose(x_range, [-16.0, 0.0])
+    assert plot.widget.getViewBox().state["mouseEnabled"] == [True, True]
+
+
+def test_show_live_returns_to_window(plot):
+    plot.show_history((-16.0, 0.0))
+    plot.show_live((-4.0, 0.0))
+    x_range, _ = plot.widget.getPlotItem().viewRange()
+    np.testing.assert_allclose(x_range, [-4.0, 0.0])
+    assert plot.widget.getViewBox().state["mouseEnabled"] == [False, True]

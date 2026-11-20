@@ -23,8 +23,11 @@ from scope.transport import (
     find_port,
 )
 
-# Samples on screen: 4 seconds at 1000 samples per second.
-TRACE_SAMPLES = 4000
+# Samples on screen while running: 4 seconds at 1000 samples per second.
+WINDOW_SAMPLES = 4000
+
+# Samples kept to scroll back through while stopped: 16 seconds.
+HISTORY_SAMPLES = 4 * WINDOW_SAMPLES
 
 # Time between plot refreshes, in milliseconds.
 REFRESH_MS = 20
@@ -127,12 +130,14 @@ def main() -> int:
     # the GUI fails.
     with transport:
         decoder = AsciiDecoder()
-        trace = Trace(TRACE_SAMPLES, SAMPLE_RATE, label="ADC Count")
+        trace = Trace(
+            HISTORY_SAMPLES, WINDOW_SAMPLES, SAMPLE_RATE, label="ADC Count"
+        )
 
         # The QApplication must exist before any widget is created.
         app = pg.mkQApp(name="Scope")
         plot = LivePlot(
-            x_range=trace.x_range,
+            x_range=trace.window_x_range,
             y_range=trace.y_range,
             y_label=trace.y_label,
             y_units=trace.y_unit,
@@ -142,6 +147,12 @@ def main() -> int:
         controller = Controller(
             transport, decoder, trace, plot, refresh_ms=REFRESH_MS
         )
+
+        shortcut = pg.QtGui.QShortcut(
+            pg.QtGui.QKeySequence("Space"), plot.widget
+        )
+        shortcut.activated.connect(controller.toggle_running)
+
         controller.start()
         app.exec()
         return 0 if controller.error is None else 1

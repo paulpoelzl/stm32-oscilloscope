@@ -36,6 +36,7 @@ class FakePlot:
     def __init__(self):
         self.y = None
         self.errors = []
+        self.views = []
 
     def plot(self, x, y):
         self.y = y.copy()
@@ -43,11 +44,18 @@ class FakePlot:
     def show_error(self, msg):
         self.errors.append(msg)
 
+    def show_live(self, x_range):
+        self.views.append("live")
 
-def make_controller(transport):
+    def show_history(self, x_range):
+        self.views.append("history")
+
+
+def make_controller(transport, history_size=3, window_size=3):
     plot = FakePlot()
+    trace = Trace(history_size, window_size, 1.0)
     controller = Controller(
-        transport, AsciiDecoder(), Trace(3, 1.0), plot, refresh_ms=1
+        transport, AsciiDecoder(), trace, plot, refresh_ms=1
     )
     return controller, plot
 
@@ -95,3 +103,34 @@ def test_timer_stops_after_read_ends(qtbot, error):
     qtbot.waitUntil(lambda: transport.reads >= 1)
     qtbot.wait(50)
     assert transport.reads == 1
+
+
+def test_events_while_stopped_are_dropped():
+    transport = FakeTransport(b"1\r\n2\r\n", b"3\r\n4\r\n")
+    controller, plot = make_controller(transport)
+    controller.update()
+    controller.toggle_running()
+    controller.update()
+    controller.toggle_running()
+    np.testing.assert_array_equal(plot.y, [np.nan, 1, 2])
+
+
+def test_stop_plots_history():
+    transport = FakeTransport(b"1\r\n2\r\n3\r\n4\r\n")
+    controller, plot = make_controller(transport, history_size=5, window_size=3)
+    controller.update()
+    np.testing.assert_array_equal(plot.y, [2, 3, 4])
+    controller.toggle_running()
+    assert plot.views == ["history"]
+    np.testing.assert_array_equal(plot.y, [1, 2, 3, 4])
+
+
+def test_second_toggle_shows_window_again():
+    transport = FakeTransport(b"1\r\n2\r\n", b"3\r\n4\r\n")
+    controller, plot = make_controller(transport)
+    controller.update()
+    controller.toggle_running()
+    controller.toggle_running()
+    controller.update()
+    assert plot.views == ["history", "live"]
+    np.testing.assert_array_equal(plot.y, [2, 3, 4])
